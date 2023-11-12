@@ -5,6 +5,11 @@
 //[int*, int*, int*, int*, ...]
 //[int, int, int] [int, int] [int, int, int, int] [int] ...
 
+struct vec {
+    int size;
+    int* arr;
+};
+
 int split(char* line, int* first, int* second) {
     //outparameters first is first token, second is second token.
     int i = 0;
@@ -24,6 +29,12 @@ int split(char* line, int* first, int* second) {
 int make_adjacency_list(char* filename) {
     int cur_node = 0;
     int temp_edge_buf[128]; //for storing edges
+
+    printf("%d\n", sizeof(struct vec));
+    printf("%d\n", sizeof(int));
+    printf("%d\n", sizeof(int*));
+    struct vec* sparse_matrix[1000000];
+    // int sparse_matrix_length = 0;
 
     FILE *fp;
     char *line = NULL;
@@ -57,13 +68,24 @@ int make_adjacency_list(char* filename) {
         // printf("first %d second %d\n", first, second);
 
         cur_node = first;
+        if (prev_node == -1) { //for first run 
+            prev_node = cur_node;
+        }
         if (prev_node != cur_node) { //while we have the same node, keep adding edges to the edge buf. 
             //if we hit a new node, make an array out of all of the previous edges.
             //malloc up to count to make the array for all the things, then put the things in the array. 
-            for (int i = 0; i < count; i++) {
-                printf("%d\n", temp_edge_buf[i]);
+            struct vec* vec = malloc(sizeof(vec));
+            vec->size = count;
+            vec->arr = malloc(sizeof(int) * count);
+            sparse_matrix[prev_node] = vec;
+            // sparse_matrix[prev_node].size = count;
+            // sparse_matrix[prev_node].arr = malloc(sizeof(int) * count);
+            for (int i = 0; i < count; i++) { //copy ints from buf into array 
+                // printf("%d\n", temp_edge_buf[i]);
+                sparse_matrix[prev_node]->arr[i] = temp_edge_buf[i];
+                // sparse_matrix[prev_node].arr[i] = temp_edge_buf[i];
             }
-            printf("\n");
+            // printf("\n");
             count = 0;
             //and now add the current thing to the temp buffer now that we've moved all the stuff out of it.
 
