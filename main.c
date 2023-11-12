@@ -4,6 +4,7 @@
 
 //[int*, int*, int*, int*, ...]
 //[int, int, int] [int, int] [int, int, int, int] [int] ...
+#define MAX_EDGES 513
 
 struct vec {
     int size;
@@ -28,13 +29,10 @@ int split(char* line, int* first, int* second) {
 
 int make_adjacency_list(char* filename) {
     int cur_node = 0;
-    int temp_edge_buf[128]; //for storing edges
+    int temp_edge_buf[MAX_EDGES]; //for storing edges
 
-    printf("%d\n", sizeof(struct vec));
-    printf("%d\n", sizeof(int));
-    printf("%d\n", sizeof(int*));
-    struct vec* sparse_matrix[1000000];
-    // int sparse_matrix_length = 0;
+    struct vec* sparse_matrix = malloc(sizeof(struct vec*) * 1000000); //make the sparse matrix 
+    int sparse_matrix_length = 0;
 
     FILE *fp;
     char *line = NULL;
@@ -58,14 +56,14 @@ int make_adjacency_list(char* filename) {
         if (line[0] == '#') { //skip commented lines
             continue;
         }
-        if (count >= 128) {
-            printf("ALERT MORE THAN 128 EDGES\n\n\n");
+        if (count >= MAX_EDGES) {
+            printf("ALERT MORE THAN %d EDGES\n\n\n", MAX_EDGES);
             exit(-1);
         }
         int first;
         int second;
         split(line, &first, &second);
-        // printf("first %d second %d\n", first, second);
+        printf("first %d second %d\n", first, second);
 
         cur_node = first;
         if (prev_node == -1) { //for first run 
@@ -77,12 +75,12 @@ int make_adjacency_list(char* filename) {
             struct vec* vec = malloc(sizeof(vec));
             vec->size = count;
             vec->arr = malloc(sizeof(int) * count);
-            sparse_matrix[prev_node] = vec;
+            sparse_matrix[prev_node] = *vec;
             // sparse_matrix[prev_node].size = count;
             // sparse_matrix[prev_node].arr = malloc(sizeof(int) * count);
             for (int i = 0; i < count; i++) { //copy ints from buf into array 
                 // printf("%d\n", temp_edge_buf[i]);
-                sparse_matrix[prev_node]->arr[i] = temp_edge_buf[i];
+                sparse_matrix[prev_node].arr[i] = temp_edge_buf[i];
                 // sparse_matrix[prev_node].arr[i] = temp_edge_buf[i];
             }
             // printf("\n");
