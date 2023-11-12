@@ -1,0 +1,51 @@
+---
+title: "Cpts 411 Programming Project 5"
+author: 
+     - "Clancy Andrews"
+     - "Alex Shirk"
+header-includes:
+   - \usepackage{amssymb}
+   - \usepackage{amsmath}
+   - \usepackage{graphicx,float}
+   - \usepackage{natbib}
+   - \usepackage{geometry}
+   - \usepackage{xcolor}
+   - \usepackage{courier}
+output:
+  pdf_document: default
+fontsize: 11pt
+urlcolor: blue
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+\break
+
+# Introduction
+
+|       
+
+\bigbreak
+
+# Analysis
+
+|       
+
+\break
+# Analysis Code
+
+The following is the code used for analyzing the collected data from the program:
+
+```{r eval=FALSE, message=FALSE, warning=FALSE, include=TRUE}
+
+```
+
+
+\break
+# Session Info
+```{r}
+sessionInfo()
+```
+
