@@ -107,8 +107,9 @@ int make_adjacency_list(char* filename, struct vec* sparse_matrix) {
 
 int main(int argc, char* argv[]) {
     // make_adjacency_list("facebook_combined.txt");
-    struct vec* sparse_matrix = malloc(sizeof(struct vec*) * 1000000); //make the sparse matrix 
-    int sparse_matrix_length = make_adjacency_list("facebook_combined.txt", sparse_matrix);
+    struct vec* sparse_matrix = malloc(sizeof(struct vec*) * 2000000); //make the sparse matrix 
+    // int sparse_matrix_length = make_adjacency_list("facebook_combined.txt", sparse_matrix);
+    int sparse_matrix_length = make_adjacency_list("web-Google_sorted.txt", sparse_matrix);
     printf("%d\n", sparse_matrix_length);
     print_sparse_matrix(sparse_matrix, sparse_matrix_length);
 }
