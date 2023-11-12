@@ -4,12 +4,21 @@
 
 //[int*, int*, int*, int*, ...]
 //[int, int, int] [int, int] [int, int, int, int] [int] ...
-#define MAX_EDGES 513
+#define MAX_EDGES 2048
 
 struct vec {
     int size;
     int* arr;
 };
+
+void print_sparse_matrix(struct vec* sparse_matrix, int sparse_matrix_length) {
+    for (int i = 0; i < sparse_matrix_length; i++) {
+        printf("%d\n", i); //i is the node 
+        for (int j = 0; j < sparse_matrix[i].size; j++) {
+            printf("  %d\n", sparse_matrix[i].arr[j]);
+        }
+    }
+}
 
 int split(char* line, int* first, int* second) {
     //outparameters first is first token, second is second token.
@@ -27,13 +36,11 @@ int split(char* line, int* first, int* second) {
     return 0;
 }
 
-int make_adjacency_list(char* filename) {
+int make_adjacency_list(char* filename, struct vec* sparse_matrix) {
     int cur_node = 0;
     int temp_edge_buf[MAX_EDGES]; //for storing edges
 
-    struct vec* sparse_matrix = malloc(sizeof(struct vec*) * 1000000); //make the sparse matrix 
     int sparse_matrix_length = 0;
-
     FILE *fp;
     char *line = NULL;
     size_t len = 0;
@@ -63,7 +70,7 @@ int make_adjacency_list(char* filename) {
         int first;
         int second;
         split(line, &first, &second);
-        printf("first %d second %d\n", first, second);
+        // printf("first %d second %d\n", first, second);
 
         cur_node = first;
         if (prev_node == -1) { //for first run 
@@ -76,6 +83,7 @@ int make_adjacency_list(char* filename) {
             vec->size = count;
             vec->arr = malloc(sizeof(int) * count);
             sparse_matrix[prev_node] = *vec;
+            sparse_matrix_length++;
             // sparse_matrix[prev_node].size = count;
             // sparse_matrix[prev_node].arr = malloc(sizeof(int) * count);
             for (int i = 0; i < count; i++) { //copy ints from buf into array 
@@ -93,10 +101,14 @@ int make_adjacency_list(char* filename) {
         prev_node = cur_node;
     }
     free(line);
+    return sparse_matrix_length;
 
 }
 
 int main(int argc, char* argv[]) {
     // make_adjacency_list("facebook_combined.txt");
-    make_adjacency_list("web-Google_sorted.txt");
+    struct vec* sparse_matrix = malloc(sizeof(struct vec*) * 1000000); //make the sparse matrix 
+    int sparse_matrix_length = make_adjacency_list("facebook_combined.txt", sparse_matrix);
+    printf("%d\n", sparse_matrix_length);
+    print_sparse_matrix(sparse_matrix, sparse_matrix_length);
 }
