@@ -11,6 +11,10 @@ struct vec {
     int size;
     int* arr;
 };
+struct count_pair {
+    int index;
+    int count;
+};
 
 void print_sparse_matrix(struct vec* sparse_matrix, int sparse_matrix_length) {
     for (int i = 0; i < sparse_matrix_length; i++) {
@@ -112,20 +116,21 @@ int nextnode(struct vec node) {
 }
 
 int pagerank(struct vec* sparse_matrix, int sparse_matrix_length, int K) {
-    int* counts = malloc(sizeof(int)*MAX_ARR_LENGTH);
+    struct count_pair* counts = malloc(sizeof(struct count_pair)*MAX_ARR_LENGTH);
     for (int i = 0; i < sparse_matrix_length; i++) {
         int current_node = i; //start at 0th node. 
         //follow path K times, incrementing count each time. 
         for (int j = 0; j < K; j++) {
             struct vec current_vec = sparse_matrix[current_node];
-            counts[current_node]++;
+            counts[current_node].index = current_node;
+            counts[current_node].count++;
             if (current_vec.size != 0) { //otherwise stay on current node.
                 current_node = nextnode(current_vec);
             }
         }
     }
     for (int i = 0; i < sparse_matrix_length; i++) {
-        printf("%d %d\n", i, counts[i]);
+        printf("%d %d\n", counts[i].index, counts[i].count);
     }
 }
 
