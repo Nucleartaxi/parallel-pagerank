@@ -129,13 +129,14 @@ int pagerank(struct vec* sparse_matrix, int sparse_matrix_length, int K) {
             struct vec current_vec = sparse_matrix[current_node];
             counts[current_node].index = current_node;
             counts[current_node].count++;
-            if (current_vec.size != 0) { //otherwise stay on current node.
-                current_node = nextnode(current_vec);
+            if (current_vec.size == 0) { //if we have no neighbors, exit. 
+                break;
             }
+            current_node = nextnode(current_vec);
         }
     }
     qsort(counts, MAX_ARR_LENGTH, sizeof(*counts), compare_function);
-    for (int i = 0; i < MAX_ARR_LENGTH; i++) {
+    for (int i = 0; i < 5; i++) {
         printf("%d %d\n", counts[i].index, counts[i].count);
     }
 }
@@ -145,7 +146,7 @@ int main(int argc, char* argv[]) {
     struct vec* sparse_matrix = malloc(sizeof(struct vec*) * MAX_ARR_LENGTH); //make the sparse matrix 
     // int sparse_matrix_length = make_adjacency_list("facebook_combined.txt", sparse_matrix);
     int sparse_matrix_length = make_adjacency_list("web-Google_sorted.txt", sparse_matrix);
-    printf("%d\n", sparse_matrix_length);
+    // printf("%d\n", sparse_matrix_length);
     pagerank(sparse_matrix, sparse_matrix_length, 100);
     // print_sparse_matrix(sparse_matrix, sparse_matrix_length);
 
