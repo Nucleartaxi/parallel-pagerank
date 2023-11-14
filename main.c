@@ -5,6 +5,7 @@
 //[int*, int*, int*, int*, ...]
 //[int, int, int] [int, int] [int, int, int, int] [int] ...
 #define MAX_EDGES 2048
+#define MAX_ARR_LENGTH 2000000
 
 struct vec {
     int size;
@@ -111,10 +112,9 @@ int nextnode(struct vec node) {
 }
 
 int pagerank(struct vec* sparse_matrix, int sparse_matrix_length, int K) {
-    int* counts = malloc(sizeof(int)*sparse_matrix_length);
+    int* counts = malloc(sizeof(int)*MAX_ARR_LENGTH);
     for (int i = 0; i < sparse_matrix_length; i++) {
         int current_node = i; //start at 0th node. 
-
         //follow path K times, incrementing count each time. 
         for (int j = 0; j < K; j++) {
             struct vec current_vec = sparse_matrix[current_node];
@@ -131,7 +131,7 @@ int pagerank(struct vec* sparse_matrix, int sparse_matrix_length, int K) {
 
 int main(int argc, char* argv[]) {
     // make_adjacency_list("facebook_combined.txt");
-    struct vec* sparse_matrix = malloc(sizeof(struct vec*) * 2000000); //make the sparse matrix 
+    struct vec* sparse_matrix = malloc(sizeof(struct vec*) * MAX_ARR_LENGTH); //make the sparse matrix 
     // int sparse_matrix_length = make_adjacency_list("facebook_combined.txt", sparse_matrix);
     int sparse_matrix_length = make_adjacency_list("web-Google_sorted.txt", sparse_matrix);
     printf("%d\n", sparse_matrix_length);
