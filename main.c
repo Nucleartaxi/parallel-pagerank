@@ -115,6 +115,11 @@ int nextnode(struct vec node) {
     return node.arr[index];
 }
 
+int compare_function(const void* p1, const void* p2) {
+    const struct count_pair* p11 = (const struct count_pair*) p1;
+    const struct count_pair* p22 = (const struct count_pair*) p2;
+    return p11->count < p22->count;
+}
 int pagerank(struct vec* sparse_matrix, int sparse_matrix_length, int K) {
     struct count_pair* counts = malloc(sizeof(struct count_pair)*MAX_ARR_LENGTH);
     for (int i = 0; i < sparse_matrix_length; i++) {
@@ -129,7 +134,8 @@ int pagerank(struct vec* sparse_matrix, int sparse_matrix_length, int K) {
             }
         }
     }
-    for (int i = 0; i < sparse_matrix_length; i++) {
+    qsort(counts, MAX_ARR_LENGTH, sizeof(*counts), compare_function);
+    for (int i = 0; i < MAX_ARR_LENGTH; i++) {
         printf("%d %d\n", counts[i].index, counts[i].count);
     }
 }
