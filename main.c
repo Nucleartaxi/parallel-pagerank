@@ -171,7 +171,7 @@ bool new_walk(double dampen) {
 int main(int argc, char* argv[]) {
 
     int k; //Length walk
-	int d; //Dampening ratio
+	double d; //Dampening ratio
     int p = 8; //Number of processes
 
     //Checks command line input
@@ -201,7 +201,7 @@ int main(int argc, char* argv[]) {
     int sparse_matrix_length = make_adjacency_list("web-Google_sorted.txt", sparse_matrix);
 
     // printf("%d\n", sparse_matrix_length);
-    pagerank(sparse_matrix, sparse_matrix_length, k);
+    pagerank(sparse_matrix, sparse_matrix_length, k, d);
 
     // print_sparse_matrix(sparse_matrix, sparse_matrix_length);
 
