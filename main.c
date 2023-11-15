@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
+#include <assert.h>
+#include <omp.h>
 
 //[int*, int*, int*, int*, ...]
 //[int, int, int] [int, int] [int, int, int, int] [int] ...
@@ -110,17 +112,21 @@ int make_adjacency_list(char* filename, struct vec* sparse_matrix) {
 
 }
 
+//Accesses next node in graph
 int nextnode(struct vec node) {
     int index = rand() % node.size;
     return node.arr[index];
 }
 
+//
 int compare_function(const void* p1, const void* p2) {
     const struct count_pair* p11 = (const struct count_pair*) p1;
     const struct count_pair* p22 = (const struct count_pair*) p2;
     return p11->count < p22->count;
 }
-int pagerank(struct vec* sparse_matrix, int sparse_matrix_length, int K) {
+
+//PageRank algorithm
+int pagerank(struct vec* sparse_matrix, int sparse_matrix_length, int K, double D) {
     struct count_pair* counts = malloc(sizeof(struct count_pair)*MAX_ARR_LENGTH);
     for (int i = 0; i < sparse_matrix_length; i++) {
         int current_node = i; //start at 0th node. 
@@ -132,7 +138,15 @@ int pagerank(struct vec* sparse_matrix, int sparse_matrix_length, int K) {
             if (current_vec.size == 0) { //if we have no neighbors, exit. 
                 break;
             }
-            current_node = nextnode(current_vec);
+            //Determine if we start from a new random node or
+            //continue on the next node 
+            if (new_walk(D) == true) {
+                index = rand() % sparse_matrix_length;
+                current_node = sparse_matrix[index];
+            }
+            else {
+                current_node = nextnode(current_vec);
+            }
         }
     }
     qsort(counts, MAX_ARR_LENGTH, sizeof(*counts), compare_function);
@@ -141,13 +155,55 @@ int pagerank(struct vec* sparse_matrix, int sparse_matrix_length, int K) {
     }
 }
 
+//Coin toss between 0 and 1
+double coin_toss(void) {
+    return (double) rand() % 1;
+}
+
+//Determines if player picks next node or random node
+bool new_walk(double dampen) {
+    if (coin_toss() <= dampen) {
+        return true;
+    }
+    return false;
+}
+
 int main(int argc, char* argv[]) {
+
+    int k; //Length walk
+	int d; //Dampening ratio
+    int p = 8; //Number of processes
+
+    //Checks command line input
+	if(argc<2) {
+		printf("Usage: n [number of threads]\n");
+		exit(1);
+	}
+	
+    //Set walk length
+	k = atoll(argv[1]);
+	printf("Debug: Walk Length = %d \n",k);
+
+    //Check and set dampening ratio
+	if(argc==3) {
+		d = atoi(argv[2]);
+		assert(d<=1 && d >= 0);
+		printf("Debug: Dampening Ratio = %d\n",d);
+	}
+ 
+    //Set the number of threads to use
+	omp_set_num_threads(p);
+
     // make_adjacency_list("facebook_combined.txt");
     struct vec* sparse_matrix = malloc(sizeof(struct vec*) * MAX_ARR_LENGTH); //make the sparse matrix 
+
     // int sparse_matrix_length = make_adjacency_list("facebook_combined.txt", sparse_matrix);
     int sparse_matrix_length = make_adjacency_list("web-Google_sorted.txt", sparse_matrix);
+
     // printf("%d\n", sparse_matrix_length);
-    pagerank(sparse_matrix, sparse_matrix_length, 100);
+    pagerank(sparse_matrix, sparse_matrix_length, k);
+
     // print_sparse_matrix(sparse_matrix, sparse_matrix_length);
+
 
 }
