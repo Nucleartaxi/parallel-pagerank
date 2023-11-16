@@ -140,11 +140,11 @@ int compare_function(const void* p1, const void* p2) {
 int pagerank(struct vec* sparse_matrix, int sparse_matrix_length, int K, double D) {
     struct count_pair* counts = malloc(sizeof(struct count_pair)*MAX_ARR_LENGTH);
 
-    #pragma omp parallel for 
+    // #pragma omp parallel for 
+    #pragma omp parallel for
     for (int i = 0; i < sparse_matrix_length; i++) {
         int current_node = i; //start at 0th node. 
         //follow path K times, incrementing count each time. 
-        printf("%d\n", i);
         for (int j = 0; j < K; j++) {
             struct vec current_vec = sparse_matrix[current_node];
             counts[current_node].index = current_node;
@@ -159,10 +159,8 @@ int pagerank(struct vec* sparse_matrix, int sparse_matrix_length, int K, double 
             //continue on the next node 
             if (new_walk(D)) {
                 int index = rand() % sparse_matrix_length;
-                current_vec = sparse_matrix[index];
-                current_node = nextnode(current_vec);
-            }
-            else {
+                current_node = index;
+            } else {
                 current_node = nextnode(current_vec);
             }
         }
