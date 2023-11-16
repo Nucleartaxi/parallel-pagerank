@@ -27,7 +27,6 @@ void print_sparse_matrix(struct vec* sparse_matrix, int sparse_matrix_length) {
     }
 }
 
-
 //Coin toss between 0 and 1
 double coin_toss(void) {
     return (1.0 / RAND_MAX) * rand();
@@ -140,7 +139,7 @@ int compare_function(const void* p1, const void* p2) {
 int pagerank(struct vec* sparse_matrix, int sparse_matrix_length, int K, double D) {
     struct count_pair* counts = malloc(sizeof(struct count_pair)*MAX_ARR_LENGTH);
 
-    // #pragma omp parallel for 
+    double time = omp_get_wtime();
     #pragma omp parallel for
     for (int i = 0; i < sparse_matrix_length; i++) {
         int current_node = i; //start at 0th node. 
@@ -165,6 +164,9 @@ int pagerank(struct vec* sparse_matrix, int sparse_matrix_length, int K, double 
             }
         }
     }
+
+    time = omp_get_wtime()-time;
+    printf("Time: %f\n\n", time);
 
     qsort(counts, MAX_ARR_LENGTH, sizeof(*counts), compare_function);
 
