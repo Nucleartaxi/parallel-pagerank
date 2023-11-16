@@ -27,6 +27,20 @@ void print_sparse_matrix(struct vec* sparse_matrix, int sparse_matrix_length) {
     }
 }
 
+
+//Coin toss between 0 and 1
+double coin_toss(void) {
+    return (double) (rand() % 1);
+}
+
+//Determines if player picks next node or random node
+int new_walk(double dampen) {
+    if (coin_toss() <= dampen) {
+        return 1;
+    }
+    return 0;
+}
+
 int split(char* line, int* first, int* second) {
     //outparameters first is first token, second is second token.
     int i = 0;
@@ -128,6 +142,8 @@ int compare_function(const void* p1, const void* p2) {
 //PageRank algorithm
 int pagerank(struct vec* sparse_matrix, int sparse_matrix_length, int K, double D) {
     struct count_pair* counts = malloc(sizeof(struct count_pair)*MAX_ARR_LENGTH);
+
+    #pragma omp parallel for
     for (int i = 0; i < sparse_matrix_length; i++) {
         int current_node = i; //start at 0th node. 
         //follow path K times, incrementing count each time. 
@@ -140,38 +156,29 @@ int pagerank(struct vec* sparse_matrix, int sparse_matrix_length, int K, double 
             }
             //Determine if we start from a new random node or
             //continue on the next node 
-            if (new_walk(D) == true) {
-                index = rand() % sparse_matrix_length;
-                current_node = sparse_matrix[index];
+            if (new_walk(D) == 1) {
+                int index = rand() % sparse_matrix_length;
+                current_vec = sparse_matrix[index];
+                current_node = nextnode(current_vec);
             }
             else {
                 current_node = nextnode(current_vec);
             }
         }
     }
+
     qsort(counts, MAX_ARR_LENGTH, sizeof(*counts), compare_function);
+
+    #pragma omp parallel for
     for (int i = 0; i < 5; i++) {
         printf("%d %d\n", counts[i].index, counts[i].count);
     }
 }
 
-//Coin toss between 0 and 1
-double coin_toss(void) {
-    return (double) rand() % 1;
-}
-
-//Determines if player picks next node or random node
-bool new_walk(double dampen) {
-    if (coin_toss() <= dampen) {
-        return true;
-    }
-    return false;
-}
-
 int main(int argc, char* argv[]) {
 
     int k; //Length walk
-	int d; //Dampening ratio
+	double d; //Dampening ratio
     int p = 8; //Number of processes
 
     //Checks command line input
@@ -182,14 +189,13 @@ int main(int argc, char* argv[]) {
 	
     //Set walk length
 	k = atoll(argv[1]);
-	printf("Debug: Walk Length = %d \n",k);
+	printf("Walk Length = %d \n",k);
 
     //Check and set dampening ratio
-	if(argc==3) {
-		d = atoi(argv[2]);
-		assert(d<=1 && d >= 0);
-		printf("Debug: Dampening Ratio = %d\n",d);
-	}
+	d = atoi(argv[2]);
+	assert(d >= 0 && d <= 1);
+	printf("Dampening Ratio = %f\n",d);
+	
  
     //Set the number of threads to use
 	omp_set_num_threads(p);
@@ -201,9 +207,12 @@ int main(int argc, char* argv[]) {
     int sparse_matrix_length = make_adjacency_list("web-Google_sorted.txt", sparse_matrix);
 
     // printf("%d\n", sparse_matrix_length);
-    pagerank(sparse_matrix, sparse_matrix_length, k);
+    pagerank(sparse_matrix, sparse_matrix_length, k, d);
 
     // print_sparse_matrix(sparse_matrix, sparse_matrix_length);
 
-
+    /*ISSUES:
+        - Check that rand() works instead of rand_r()
+        - Commandline input doesn't let us have float values for 0-1
+    */
 }

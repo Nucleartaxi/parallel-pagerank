@@ -1,4 +1,4 @@
 #!/bin/bash
 
-gcc main.c
-./a.out
+gcc main.c -fopenmp
+./a.out 10 1
