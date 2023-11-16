@@ -35,10 +35,7 @@ double coin_toss(void) {
 
 //Determines if player picks next node or random node
 int new_walk(double dampen) {
-    if (coin_toss() <= dampen) {
-        return 1;
-    }
-    return 0;
+    return coin_toss() <= dampen;
 }
 
 int split(char* line, int* first, int* second) {
@@ -147,6 +144,7 @@ int pagerank(struct vec* sparse_matrix, int sparse_matrix_length, int K, double 
     for (int i = 0; i < sparse_matrix_length; i++) {
         int current_node = i; //start at 0th node. 
         //follow path K times, incrementing count each time. 
+        printf("%d\n", i);
         for (int j = 0; j < K; j++) {
             struct vec current_vec = sparse_matrix[current_node];
             counts[current_node].index = current_node;
@@ -159,7 +157,7 @@ int pagerank(struct vec* sparse_matrix, int sparse_matrix_length, int K, double 
             }
             //Determine if we start from a new random node or
             //continue on the next node 
-            if (new_walk(D) == 1) {
+            if (new_walk(D)) {
                 int index = rand() % sparse_matrix_length;
                 current_vec = sparse_matrix[index];
                 current_node = nextnode(current_vec);
