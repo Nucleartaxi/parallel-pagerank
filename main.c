@@ -30,7 +30,7 @@ void print_sparse_matrix(struct vec* sparse_matrix, int sparse_matrix_length) {
 
 //Coin toss between 0 and 1
 double coin_toss(void) {
-    return (double) (rand() % 1);
+    return (1.0 / RAND_MAX) * rand();
 }
 
 //Determines if player picks next node or random node
