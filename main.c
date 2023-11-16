@@ -192,7 +192,7 @@ int main(int argc, char* argv[]) {
 	printf("Walk Length = %d \n",k);
 
     //Check and set dampening ratio
-	d = atoi(argv[2]);
+	d = atof(argv[2]); //converts to float
 	assert(d >= 0 && d <= 1);
 	printf("Dampening Ratio = %f\n",d);
 	
