@@ -143,14 +143,17 @@ int compare_function(const void* p1, const void* p2) {
 int pagerank(struct vec* sparse_matrix, int sparse_matrix_length, int K, double D) {
     struct count_pair* counts = malloc(sizeof(struct count_pair)*MAX_ARR_LENGTH);
 
-    #pragma omp parallel for
+    #pragma omp parallel for 
     for (int i = 0; i < sparse_matrix_length; i++) {
         int current_node = i; //start at 0th node. 
         //follow path K times, incrementing count each time. 
         for (int j = 0; j < K; j++) {
             struct vec current_vec = sparse_matrix[current_node];
             counts[current_node].index = current_node;
+
+            #pragma omp atomic
             counts[current_node].count++;
+
             if (current_vec.size == 0) { //if we have no neighbors, exit. 
                 break;
             }
@@ -169,7 +172,6 @@ int pagerank(struct vec* sparse_matrix, int sparse_matrix_length, int K, double 
 
     qsort(counts, MAX_ARR_LENGTH, sizeof(*counts), compare_function);
 
-    #pragma omp parallel for
     for (int i = 0; i < 5; i++) {
         printf("%d %d\n", counts[i].index, counts[i].count);
     }
@@ -209,7 +211,7 @@ int main(int argc, char* argv[]) {
     // printf("%d\n", sparse_matrix_length);
     pagerank(sparse_matrix, sparse_matrix_length, k, d);
 
-    // print_sparse_matrix(sparse_matrix, sparse_matrix_length);
+    //print_sparse_matrix(sparse_matrix, sparse_matrix_length);
 
     /*ISSUES:
         - Check that rand() works instead of rand_r()
