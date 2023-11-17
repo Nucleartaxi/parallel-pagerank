@@ -29,13 +29,13 @@ void print_sparse_matrix(struct vec* sparse_matrix, int sparse_matrix_length) {
 }
 
 //Coin toss between 0 and 1
-double coin_toss(void) {
-    return (1.0 / RAND_MAX) * rand();
+double coin_toss(unsigned int* myseed) {
+    return (1.0 / RAND_MAX) * rand_r(myseed);
 }
 
 //Determines if player picks next node or random node
-int new_walk(double dampen) {
-    return coin_toss() <= dampen;
+int new_walk(double dampen, unsigned int* myseed) {
+    return coin_toss(myseed) <= dampen;
 }
 
 int split(char* line, int* first, int* second) {
@@ -124,8 +124,8 @@ int make_adjacency_list(char* filename, struct vec* sparse_matrix) {
 }
 
 //Accesses next node in graph
-int nextnode(struct vec node) {
-    int index = rand() % node.size;
+int nextnode(struct vec node, unsigned int* myseed) {
+    int index = rand_r(myseed) % node.size;
     return node.arr[index];
 }
 
@@ -153,6 +153,7 @@ int pagerank(struct vec* sparse_matrix, int sparse_matrix_length, int K, double 
     //parallel for loop
     #pragma omp parallel for shared(sparse_matrix, my_lock, final_counts) firstprivate(sparse_matrix_length, D, K) default(none)
     for (int i = 0; i < sparse_matrix_length; i++) {
+        unsigned int myseed = i;
         // printf("%d %f %d\n", sparse_matrix_length, D, K);
         int current_node = i; //start at 0th node. 
         //follow path K times, incrementing count each time. 
@@ -176,11 +177,11 @@ int pagerank(struct vec* sparse_matrix, int sparse_matrix_length, int K, double 
             }
             //Determine if we start from a new random node or
             //continue on the next node 
-            if (new_walk(D)) {
-                int index = rand() % sparse_matrix_length;
+            if (new_walk(D, &myseed)) {
+                int index = rand_r(&myseed) % sparse_matrix_length;
                 current_node = index;
             } else {
-                current_node = nextnode(current_vec);
+                current_node = nextnode(current_vec, &myseed);
             }
         }
     }
