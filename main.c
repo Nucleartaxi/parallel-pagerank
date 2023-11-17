@@ -141,12 +141,11 @@ int pagerank(struct vec* sparse_matrix, int sparse_matrix_length, int K, double 
     struct count_pair* final_counts = malloc(sizeof(struct count_pair)*MAX_ARR_LENGTH);
 
     //set up lock data structure
-    int num_locks = sparse_matrix_length / NODES_IN_PARTITION;
+    int num_locks = MAX_ARR_LENGTH / NODES_IN_PARTITION;
     printf("num locks = %d\n", num_locks);
-    // omp_lock_t locks[num_locks];
 
-    omp_lock_t my_lock[200];
-    for (int i = 0; i < 200; i++) {
+    omp_lock_t my_lock[num_locks];
+    for (int i = 0; i < num_locks; i++) {
         omp_init_lock(&my_lock[i]);
     }
 
@@ -166,7 +165,6 @@ int pagerank(struct vec* sparse_matrix, int sparse_matrix_length, int K, double 
             int lock_index_pls = current_node / NODES_IN_PARTITION;
             // printf("lock_index_pls %d\n", lock_index_pls);
             omp_set_lock(&(my_lock[lock_index_pls]));
-            // printf("acquired lock\n");
             final_counts[current_node].count++;
             final_counts[current_node].index = current_node;
             omp_unset_lock(&(my_lock[lock_index_pls]));
