@@ -139,12 +139,6 @@ int compare_function(const void* p1, const void* p2) {
 int pagerank(struct vec* sparse_matrix, int sparse_matrix_length, int K, double D, int p) {
     struct count_pair* final_counts = malloc(sizeof(struct count_pair)*MAX_ARR_LENGTH);
 
-    //make an array for each process 
-    struct count_pair* count_arrays[p];
-    for (int i = 0; i < p; i++) {
-        count_arrays[i] = malloc(sizeof(struct count_pair)*MAX_ARR_LENGTH);
-    }
-
     double time = omp_get_wtime();
     //parallel for loop
     #pragma omp parallel for
@@ -153,8 +147,10 @@ int pagerank(struct vec* sparse_matrix, int sparse_matrix_length, int K, double 
         //follow path K times, incrementing count each time. 
         for (int j = 0; j < K; j++) {
             struct vec current_vec = sparse_matrix[current_node];
-            count_arrays[omp_get_thread_num()][current_node].count++;
-            count_arrays[omp_get_thread_num()][current_node].index = current_node;
+
+            #pragma omp atomic
+            final_counts[current_node].count++;
+            final_counts[current_node].index = current_node;
 
             if (current_vec.size == 0) { //if we have no neighbors, exit. 
                 break;
@@ -168,17 +164,6 @@ int pagerank(struct vec* sparse_matrix, int sparse_matrix_length, int K, double 
                 current_node = nextnode(current_vec);
             }
         }
-    }
-
-    //reduce step 
-    for (int current_node = 0; current_node < MAX_ARR_LENGTH; current_node++) { //for each node in array
-        int localsum = 0;
-        for (int p_index = 0; p_index < p; p_index++) {
-            localsum += count_arrays[p_index][current_node].count;
-        }
-        final_counts[current_node].count = localsum;
-        final_counts[current_node].index = current_node;
-        // printf("%d\n", final_counts[current_node].count);
     }
 
     time = omp_get_wtime()-time;
