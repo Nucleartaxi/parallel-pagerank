@@ -136,8 +136,13 @@ int compare_function(const void* p1, const void* p2) {
 }
 
 //PageRank algorithm
-int pagerank(struct vec* sparse_matrix, int sparse_matrix_length, int K, double D) {
-    struct count_pair* counts = malloc(sizeof(struct count_pair)*MAX_ARR_LENGTH);
+int pagerank(struct vec* sparse_matrix, int sparse_matrix_length, int K, double D, int p) {
+    struct count_pair* final_counts = malloc(sizeof(struct count_pair)*MAX_ARR_LENGTH);
+
+    struct count_pair* count_arrays[p];
+    for (int i = 0; i < p; i++) {
+        count_arrays[i] = malloc(sizeof(struct count_pair)*MAX_ARR_LENGTH);
+    }
 
     double time = omp_get_wtime();
     #pragma omp parallel for
@@ -146,10 +151,8 @@ int pagerank(struct vec* sparse_matrix, int sparse_matrix_length, int K, double 
         //follow path K times, incrementing count each time. 
         for (int j = 0; j < K; j++) {
             struct vec current_vec = sparse_matrix[current_node];
-            counts[current_node].index = current_node;
-
-            #pragma omp atomic
-            counts[current_node].count++;
+            count_arrays[omp_get_thread_num()][current_node].count++;
+            count_arrays[omp_get_thread_num()][current_node].index = current_node;
 
             if (current_vec.size == 0) { //if we have no neighbors, exit. 
                 break;
@@ -165,13 +168,24 @@ int pagerank(struct vec* sparse_matrix, int sparse_matrix_length, int K, double 
         }
     }
 
+    //reduce step 
+    for (int current_node = 0; current_node < MAX_ARR_LENGTH; current_node++) { //for each node in array
+        int localsum = 0;
+        for (int p_index = 0; p_index < p; p_index++) {
+            localsum += count_arrays[p_index][current_node].count;
+        }
+        final_counts[current_node].count = localsum;
+        final_counts[current_node].index = current_node;
+        // printf("%d\n", final_counts[current_node].count);
+    }
+
     time = omp_get_wtime()-time;
     printf("Time: %f\n\n", time);
 
-    qsort(counts, MAX_ARR_LENGTH, sizeof(*counts), compare_function);
+    qsort(final_counts, MAX_ARR_LENGTH, sizeof(*final_counts), compare_function);
 
     for (int i = 0; i < 5; i++) {
-        printf("%d %d\n", counts[i].index, counts[i].count);
+        printf("%d %d\n", final_counts[i].index, final_counts[i].count);
     }
 }
 
@@ -210,7 +224,7 @@ int main(int argc, char* argv[]) {
     int sparse_matrix_length = make_adjacency_list("web-Google_sorted.txt", sparse_matrix);
 
     // printf("%d\n", sparse_matrix_length);
-    pagerank(sparse_matrix, sparse_matrix_length, k, d);
+    pagerank(sparse_matrix, sparse_matrix_length, k, d, p);
 
     //print_sparse_matrix(sparse_matrix, sparse_matrix_length);
 
