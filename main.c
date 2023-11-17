@@ -8,6 +8,7 @@
 //[int, int, int] [int, int] [int, int, int, int] [int] ...
 #define MAX_EDGES 4096
 #define MAX_ARR_LENGTH 2000000
+#define NODES_IN_PARTITION 10000
 
 struct vec {
     int size;
@@ -139,6 +140,13 @@ int compare_function(const void* p1, const void* p2) {
 int pagerank(struct vec* sparse_matrix, int sparse_matrix_length, int K, double D, int p) {
     struct count_pair* final_counts = malloc(sizeof(struct count_pair)*MAX_ARR_LENGTH);
 
+    //set up lock data structure
+    int num_locks = sparse_matrix_length / NODES_IN_PARTITION;
+    printf("num locks = %d\n", num_locks);
+    // omp_lock_t locks[num_locks];
+
+    omp_lock_t my_lock;
+
     double time = omp_get_wtime();
     //parallel for loop
     #pragma omp parallel for
@@ -148,9 +156,16 @@ int pagerank(struct vec* sparse_matrix, int sparse_matrix_length, int K, double 
         for (int j = 0; j < K; j++) {
             struct vec current_vec = sparse_matrix[current_node];
 
-            #pragma omp atomic
+            //acquire lock for the block of nodes of length NODES_IN_PARTITION before performing critical operation.
+            printf("attempting to acquire lock\n");
+            // omp_set_lock(&locks[current_node / NODES_IN_PARTITION]);
+            omp_set_lock(&my_lock);
+            printf("acquired lock\n");
             final_counts[current_node].count++;
             final_counts[current_node].index = current_node;
+            omp_unset_lock(&my_lock);
+            // omp_unset_lock(&locks[current_node / NODES_IN_PARTITION]);
+            printf("released lock\n");
 
             if (current_vec.size == 0) { //if we have no neighbors, exit. 
                 break;
