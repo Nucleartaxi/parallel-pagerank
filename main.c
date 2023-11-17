@@ -145,7 +145,10 @@ int pagerank(struct vec* sparse_matrix, int sparse_matrix_length, int K, double 
     printf("num locks = %d\n", num_locks);
     // omp_lock_t locks[num_locks];
 
-    omp_lock_t my_lock;
+    omp_lock_t my_lock[200];
+    for (int i = 0; i < 200; i++) {
+        omp_init_lock(&my_lock[i]);
+    }
 
     double time = omp_get_wtime();
     //parallel for loop
@@ -157,13 +160,13 @@ int pagerank(struct vec* sparse_matrix, int sparse_matrix_length, int K, double 
             struct vec current_vec = sparse_matrix[current_node];
 
             //acquire lock for the block of nodes of length NODES_IN_PARTITION before performing critical operation.
-            printf("attempting to acquire lock\n");
+            printf("attempting to acquire lock for node %d\n", current_node);
             // omp_set_lock(&locks[current_node / NODES_IN_PARTITION]);
-            omp_set_lock(&my_lock);
+            omp_set_lock(&my_lock[1]);
             printf("acquired lock\n");
             final_counts[current_node].count++;
             final_counts[current_node].index = current_node;
-            omp_unset_lock(&my_lock);
+            omp_unset_lock(&my_lock[1]);
             // omp_unset_lock(&locks[current_node / NODES_IN_PARTITION]);
             printf("released lock\n");
 
