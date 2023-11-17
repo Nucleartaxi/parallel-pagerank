@@ -152,8 +152,9 @@ int pagerank(struct vec* sparse_matrix, int sparse_matrix_length, int K, double 
 
     double time = omp_get_wtime();
     //parallel for loop
-    #pragma omp parallel for
+    #pragma omp parallel for shared(sparse_matrix, my_lock, final_counts) firstprivate(sparse_matrix_length, D, K) default(none)
     for (int i = 0; i < sparse_matrix_length; i++) {
+        // printf("%d %f %d\n", sparse_matrix_length, D, K);
         int current_node = i; //start at 0th node. 
         //follow path K times, incrementing count each time. 
         for (int j = 0; j < K; j++) {
