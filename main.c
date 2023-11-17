@@ -223,7 +223,7 @@ int main(int argc, char* argv[]) {
     struct vec* sparse_matrix = malloc(sizeof(struct vec*) * MAX_ARR_LENGTH); //make the sparse matrix 
 
     // int sparse_matrix_length = make_adjacency_list("facebook_combined.txt", sparse_matrix);
-    int sparse_matrix_length = make_adjacency_list("web-NotreDame_sorted.txt", sparse_matrix);
+    int sparse_matrix_length = make_adjacency_list("web-Google_sorted.txt", sparse_matrix);
 
     // printf("%d\n", sparse_matrix_length);
     pagerank(sparse_matrix, sparse_matrix_length, k, d, p);
