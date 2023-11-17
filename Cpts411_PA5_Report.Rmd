@@ -25,7 +25,11 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Introduction
 
-|       
+|       For this project, our goal was to use a multithreaded implementation of the PageRank algorithm to estimate the ranks of nodes on a graph input. The PageRank of a node $u$ in a graph is used when determining the importance of a node throughout the network. In this particular instance, we can think of the nodes as webpages, and the edges between the nodes as hyperlinks to other webpages. It is worth noting that the graph is directed, since an edge can go from node $u$ to node $v$, but node $v$ need not necessarily have an edge (hyperlink) to node $u$ as well. We can consider the total degree of a node as the sum between the out degree and in degree of each node. The out degree is the number of outgoing edges from the particular node and the in degree is the number of edges coming in. 
+
+|        The PageRank algorithm estimator is as follows. First, we start from every node in the graph. We then do a random walk of length $K$, keeping track of the number of times a particular node $u$ is visited. The estimated PageRank value for node $u$ is the number of time $u$ was visited divided by the total number of visits in the network. When progressing through a random walk, we can expect that the next visit to a node will either be one of the neighbors of the current node, or a completely random node in the graph. To account for this, the use of a dampening ratio $D$ will be used. It is worth noting that $D \in [0,1]$. If we toss a coin with $D$ probability of landing on heads and $1-D$ probability of landing on tails, we can say that if the coin lands on heads, we randomly select a node in the network to continue the walk on. If the coin lands tails, then we randomly select a neighboring node to continue the walk on.
+
+|       With this logic, our goal was to observe how the algorithm will perform given different dampening ratios, different walk lengths, and different number of threads being used. Since the graphs that are being tested on are sparse, we used an adjacency list to hold the data provided. This allows the program to run faster than the alternative adjacency matrix.
 
 \bigbreak
 
@@ -39,7 +43,68 @@ knitr::opts_chunk$set(echo = TRUE)
 The following is the code used for analyzing the collected data from the program:
 
 ```{r eval=FALSE, message=FALSE, warning=FALSE, include=TRUE}
+#Libraries
+library(ggplot2)
+library(knitr)
+library(stats)
 
+#Import data for analysis
+df = read.csv2("output.csv", header = FALSE, sep = ",")
+colnames(df) = c()
+
+#Extract Serial Time from Data
+serial_time = subset(df, P == 1)$Time
+
+#Get the parallel times for each P value
+parallel_time = data.frame(matrix(ncol = length(unique(df$P)) - 1, nrow = 11))
+colnames(parallel_time) = c("1", "2", "4", "8")
+
+for (i in colnames(parallel_time)) {
+  p_value = as.numeric(i)
+  data = df$Time[df$P == p_value]
+  parallel_time[, i] = data
+}
+
+#Calculate the speed up
+speedup= data.frame(matrix(ncol = length(unique(df$P)) - 1, nrow = 11))
+colnames(speedup) = c("1", "2", "4", "8")
+
+for (i in colnames(speedup)) {
+  speedup[,i] = as.numeric(serial_time)/as.numeric(parallel_time[,i])
+}
+
+row.names(speedup) = unique(df$N)
+
+#Precision data
+pi = data.frame(matrix(ncol = length(unique(df$P)), nrow = 11))
+colnames(pi) = c("1", "2", "4", "8", "16")
+
+for (i in colnames(pi)) {
+  p_value = as.numeric(i)
+  data = df$Pi[df$P == p_value]
+  data = round(as.numeric(data),5)
+  pi[, i] = data
+}
+row.names(pi) = unique(df$N)
+
+#Difference in the pi values
+pi_diff = data.frame(matrix(ncol = length(unique(df$P)), nrow = 11))
+colnames(pi_diff) = c("1", "2", "4", "8", "16")
+
+for (i in colnames(pi)) {
+  p_value = as.numeric(i)
+  data = df$Difference[df$P == p_value]
+  data = round(as.numeric(data),5)
+  pi_diff[, i] = data
+}
+row.names(pi_diff) = unique(df$N)
+
+#Tables for speedup and pi_estimates
+kable(speedup, row.names = TRUE, caption = "")
+
+kable(pi, row.names = TRUE, caption = "")
+
+kable(pi_diff, row.names = TRUE, caption = "")
 ```
 
 
