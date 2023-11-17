@@ -184,8 +184,10 @@ int pagerank(struct vec* sparse_matrix, int sparse_matrix_length, int K, double 
 
     qsort(final_counts, MAX_ARR_LENGTH, sizeof(*final_counts), compare_function);
 
+    int total_iterations = sparse_matrix_length * K;  //we know how many times we iterate becuase we defined the for loop, so we can get our total counts this way
+
     for (int i = 0; i < 5; i++) {
-        printf("%d %d\n", final_counts[i].index, final_counts[i].count);
+        printf("%d %f\n", final_counts[i].index, final_counts[i].count / (double) total_iterations);
     }
 }
 
