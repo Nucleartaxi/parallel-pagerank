@@ -3,6 +3,7 @@
 #include <ctype.h>
 #include <assert.h>
 #include <omp.h>
+#include <time.h>
 
 //[int*, int*, int*, int*, ...]
 //[int, int, int] [int, int] [int, int, int, int] [int] ...
@@ -149,12 +150,15 @@ int pagerank(struct vec* sparse_matrix, int sparse_matrix_length, int K, double 
         omp_init_lock(&my_lock[i]);
     }
 
-    double time = omp_get_wtime();
+    unsigned int myseed = rand(); //get an initial random seed value 
+
+    double mytime = omp_get_wtime();
+
     //parallel for loop
-    #pragma omp parallel for shared(sparse_matrix, my_lock, final_counts) firstprivate(sparse_matrix_length, D, K) default(none)
+    #pragma omp parallel for shared(sparse_matrix, my_lock, final_counts) firstprivate(sparse_matrix_length, D, K, myseed) default(none)
     for (int i = 0; i < sparse_matrix_length; i++) {
-        unsigned int myseed = i;
         // printf("%d %f %d\n", sparse_matrix_length, D, K);
+        myseed += omp_get_thread_num(); //vary seed based on thread
         int current_node = i; //start at 0th node. 
         //follow path K times, incrementing count each time. 
         for (int j = 0; j < K; j++) {
@@ -186,8 +190,8 @@ int pagerank(struct vec* sparse_matrix, int sparse_matrix_length, int K, double 
         }
     }
 
-    time = omp_get_wtime()-time;
-    printf("Time: %f\n\n", time);
+    mytime = omp_get_wtime()-mytime;
+    printf("Time: %f\n\n", mytime);
 
     qsort(final_counts, MAX_ARR_LENGTH, sizeof(*final_counts), compare_function);
 
