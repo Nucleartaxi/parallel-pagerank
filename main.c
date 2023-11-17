@@ -8,7 +8,7 @@
 //[int, int, int] [int, int] [int, int, int, int] [int] ...
 #define MAX_EDGES 4096
 #define MAX_ARR_LENGTH 2000000
-#define NODES_IN_PARTITION 10000
+#define NODES_IN_PARTITION 5000
 
 struct vec {
     int size;
