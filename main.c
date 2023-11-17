@@ -182,17 +182,20 @@ int main(int argc, char* argv[]) {
     int p = 8; //Number of processes
 
     //Checks command line input
-	if(argc<2) {
-		printf("Usage: n [number of threads]\n");
+	if(argc<3) {
+		printf("Usage: n [number of threads] [walk length] [damping ratio]\n");
 		exit(1);
 	}
-	
+    //set num threads
+	p = atoll(argv[1]);
+	printf("Number of Threads = %d \n",p);
+
     //Set walk length
-	k = atoll(argv[1]);
+	k = atoll(argv[2]);
 	printf("Walk Length = %d \n",k);
 
     //Check and set dampening ratio
-	d = atof(argv[2]); //converts to float
+	d = atof(argv[3]); //converts to float
 	assert(d >= 0 && d <= 1);
 	printf("Dampening Ratio = %f\n",d);
 	
