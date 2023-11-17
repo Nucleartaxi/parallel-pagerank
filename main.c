@@ -161,15 +161,17 @@ int pagerank(struct vec* sparse_matrix, int sparse_matrix_length, int K, double 
             struct vec current_vec = sparse_matrix[current_node];
 
             //acquire lock for the block of nodes of length NODES_IN_PARTITION before performing critical operation.
-            printf("attempting to acquire lock for node %d\n", current_node);
+            // printf("attempting to acquire lock for node %d\n", current_node);
             // omp_set_lock(&locks[current_node / NODES_IN_PARTITION]);
-            omp_set_lock(&my_lock[1]);
-            printf("acquired lock\n");
+            int lock_index_pls = current_node / NODES_IN_PARTITION;
+            // printf("lock_index_pls %d\n", lock_index_pls);
+            omp_set_lock(&(my_lock[lock_index_pls]));
+            // printf("acquired lock\n");
             final_counts[current_node].count++;
             final_counts[current_node].index = current_node;
-            omp_unset_lock(&my_lock[1]);
+            omp_unset_lock(&(my_lock[lock_index_pls]));
             // omp_unset_lock(&locks[current_node / NODES_IN_PARTITION]);
-            printf("released lock\n");
+            // printf("released lock\n");
 
             if (current_vec.size == 0) { //if we have no neighbors, exit. 
                 break;
