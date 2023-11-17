@@ -139,12 +139,14 @@ int compare_function(const void* p1, const void* p2) {
 int pagerank(struct vec* sparse_matrix, int sparse_matrix_length, int K, double D, int p) {
     struct count_pair* final_counts = malloc(sizeof(struct count_pair)*MAX_ARR_LENGTH);
 
+    //make an array for each process 
     struct count_pair* count_arrays[p];
     for (int i = 0; i < p; i++) {
         count_arrays[i] = malloc(sizeof(struct count_pair)*MAX_ARR_LENGTH);
     }
 
     double time = omp_get_wtime();
+    //parallel for loop
     #pragma omp parallel for
     for (int i = 0; i < sparse_matrix_length; i++) {
         int current_node = i; //start at 0th node. 
