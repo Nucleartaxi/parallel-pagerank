@@ -77,8 +77,7 @@ int make_adjacency_list(char* filename, struct vec* sparse_matrix) {
     int count = 0;
     int prev_node = -1;
     while ((read = getline(&line, &len, fp)) != -1) {
-        // printf("Retrieved line of length %zu :\n", read);
-        // printf("%s", line);
+
         if (line[0] == '#') { //skip commented lines
             continue;
         }
@@ -89,7 +88,6 @@ int make_adjacency_list(char* filename, struct vec* sparse_matrix) {
         int first;
         int second;
         split(line, &first, &second);
-        // printf("first %d second %d\n", first, second);
 
         cur_node = first;
         if (prev_node == -1) { //for first run 
@@ -103,14 +101,10 @@ int make_adjacency_list(char* filename, struct vec* sparse_matrix) {
             vec->arr = malloc(sizeof(int) * count);
             sparse_matrix[prev_node] = *vec;
             sparse_matrix_length++;
-            // sparse_matrix[prev_node].size = count;
-            // sparse_matrix[prev_node].arr = malloc(sizeof(int) * count);
+
             for (int i = 0; i < count; i++) { //copy ints from buf into array 
-                // printf("%d\n", temp_edge_buf[i]);
-                sparse_matrix[prev_node].arr[i] = temp_edge_buf[i];
-                // sparse_matrix[prev_node].arr[i] = temp_edge_buf[i];
+                sparse_matrix[prev_node].arr[i] = temp_edge_buf[i];;
             }
-            // printf("\n");
             count = 0;
             //and now add the current thing to the temp buffer now that we've moved all the stuff out of it.
 
@@ -130,7 +124,7 @@ int nextnode(struct vec node, unsigned int* myseed) {
     return node.arr[index];
 }
 
-//
+//Used for compare in qsort function
 int compare_function(const void* p1, const void* p2) {
     const struct count_pair* p11 = (const struct count_pair*) p1;
     const struct count_pair* p22 = (const struct count_pair*) p2;
@@ -143,7 +137,7 @@ int pagerank(struct vec* sparse_matrix, int sparse_matrix_length, int K, double 
 
     //set up lock data structure
     int num_locks = MAX_ARR_LENGTH / NODES_IN_PARTITION;
-    printf("num locks = %d\n", num_locks);
+    //printf("num locks = %d\n", num_locks);
 
     omp_lock_t my_lock[num_locks];
     for (int i = 0; i < num_locks; i++) {
@@ -157,7 +151,6 @@ int pagerank(struct vec* sparse_matrix, int sparse_matrix_length, int K, double 
     //parallel for loop
     #pragma omp parallel for shared(sparse_matrix, my_lock, final_counts) firstprivate(sparse_matrix_length, D, K, myseed) default(none)
     for (int i = 0; i < sparse_matrix_length; i++) {
-        // printf("%d %f %d\n", sparse_matrix_length, D, K);
         myseed += omp_get_thread_num(); //vary seed based on thread
         int current_node = i; //start at 0th node. 
         //follow path K times, incrementing count each time. 
@@ -165,16 +158,11 @@ int pagerank(struct vec* sparse_matrix, int sparse_matrix_length, int K, double 
             struct vec current_vec = sparse_matrix[current_node];
 
             //acquire lock for the block of nodes of length NODES_IN_PARTITION before performing critical operation.
-            // printf("attempting to acquire lock for node %d\n", current_node);
-            // omp_set_lock(&locks[current_node / NODES_IN_PARTITION]);
             int lock_index_pls = current_node / NODES_IN_PARTITION;
-            // printf("lock_index_pls %d\n", lock_index_pls);
             omp_set_lock(&(my_lock[lock_index_pls]));
             final_counts[current_node].count++;
             final_counts[current_node].index = current_node;
             omp_unset_lock(&(my_lock[lock_index_pls]));
-            // omp_unset_lock(&locks[current_node / NODES_IN_PARTITION]);
-            // printf("released lock\n");
 
             if (current_vec.size == 0) { //if we have no neighbors, exit. 
                 break;
@@ -200,6 +188,7 @@ int pagerank(struct vec* sparse_matrix, int sparse_matrix_length, int K, double 
     for (int i = 0; i < 5; i++) {
         printf("%d %f\n", final_counts[i].index, final_counts[i].count / (double) total_iterations);
     }
+    printf("\n");
 }
 
 int main(int argc, char* argv[]) {
@@ -215,7 +204,7 @@ int main(int argc, char* argv[]) {
 	}
     //set num threads
 	p = atoll(argv[1]);
-	printf("Number of Threads = %d \n",p);
+	printf("\nNumber of Threads = %d \n",p);
 
     //Set walk length
 	k = atoll(argv[2]);
@@ -224,25 +213,15 @@ int main(int argc, char* argv[]) {
     //Check and set dampening ratio
 	d = atof(argv[3]); //converts to float
 	assert(d >= 0 && d <= 1);
-	printf("Dampening Ratio = %f\n",d);
-	
+	printf("Dampening Ratio = %f\n\n",d);
  
     //Set the number of threads to use
 	omp_set_num_threads(p);
 
-    // make_adjacency_list("facebook_combined.txt");
     struct vec* sparse_matrix = malloc(sizeof(struct vec*) * MAX_ARR_LENGTH); //make the sparse matrix 
 
-    // int sparse_matrix_length = make_adjacency_list("facebook_combined.txt", sparse_matrix);
     int sparse_matrix_length = make_adjacency_list("web-Google_sorted.txt", sparse_matrix);
 
-    // printf("%d\n", sparse_matrix_length);
     pagerank(sparse_matrix, sparse_matrix_length, k, d, p);
 
-    //print_sparse_matrix(sparse_matrix, sparse_matrix_length);
-
-    /*ISSUES:
-        - Check that rand() works instead of rand_r()
-        - Commandline input doesn't let us have float values for 0-1
-    */
 }

@@ -35,7 +35,82 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Analysis
 
-|       
+|    The data was collected on a personal computer, which utilizes an Intel i9-10900K CPU at 3.70GHz, containing 10 cores and 20 logical processors (threads).
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#Libraries
+library(ggplot2)
+library(knitr)
+library(stats)
+
+#Import data for analysis
+damp = read.csv2("dampening.csv", header = FALSE, sep = ",")
+colnames(damp) = c("Time", "K", "p", "D")
+
+length = read.csv2("length.csv", header=FALSE, sep = ",")
+colnames(length) = c("Time", "K", "p", "D")
+
+#Extract Serial Time from Data
+serial_time_damp = subset(damp, p == 1)$Time
+serial_time_length = subset(length, p == 1)$Time
+
+#Get the parallel times for each P value
+parallel_time_damp = data.frame(matrix(ncol = length(unique(damp$p)), nrow = dim(damp)[1]))
+colnames(parallel_time_damp) = c("1", "2", "4", "8", "16")
+
+parallel_time_length = data.frame(matrix(ncol = length(unique(length$p)), nrow = dim(length)[1]))
+colnames(parallel_time_length) = c("1", "2", "4", "8", "16")
+
+for (i in colnames(parallel_time_damp)) {
+  p_value = as.numeric(i)
+  data = damp$Time[damp$p == p_value]
+  parallel_time_damp[, i] = data
+}
+
+for (i in colnames(parallel_time_length)) {
+  p_value = as.numeric(i)
+  data = length$Time[length$p == p_value]
+  parallel_time_length[, i] = data
+}
+
+#Calculate the speed up
+speedup_damp= data.frame(matrix(ncol = length(unique(damp$p)), nrow = 3))
+colnames(speedup_damp) = c("1", "2", "4", "8", "16")
+
+for (i in colnames(speedup_damp)) {
+  speedup_damp[,i] = (as.numeric(serial_time_damp)/as.numeric(parallel_time_damp[,i]))[1:3]
+}
+
+row.names(speedup_damp) = unique(damp$D)
+
+speedup_length= data.frame(matrix(ncol = length(unique(length$p)), nrow = 5))
+colnames(speedup_length) = c("1", "2", "4", "8", "16")
+
+for (i in colnames(speedup_length)) {
+  speedup_length[,i] = (as.numeric(serial_time_length)/as.numeric(parallel_time_length[,i]))[1:5]
+}
+
+row.names(speedup_length) = unique(length$K)
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+```
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+kable(speedup_damp, row.names = TRUE, caption = "Speed up for corresponding $D$ (rows) dampening ratios and $p$ (columns) number of processes.")
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+kable(speedup_length, row.names = TRUE, caption = "Speed up for corresponding $K$ (rows) number of steps in the random walk and $p$ (columns) number of processes.")
+```
+
 
 \break
 # Analysis Code
@@ -49,62 +124,61 @@ library(knitr)
 library(stats)
 
 #Import data for analysis
-df = read.csv2("output.csv", header = FALSE, sep = ",")
-colnames(df) = c()
+damp = read.csv2("dampening.csv", header = FALSE, sep = ",")
+colnames(damp) = c("Time", "K", "p", "D")
+
+length = read.csv2("length.csv", header=FALSE, sep = ",")
+colnames(length) = c("Time", "K", "p", "D")
 
 #Extract Serial Time from Data
-serial_time = subset(df, P == 1)$Time
+serial_time_damp = subset(damp, p == 1)$Time
+serial_time_length = subset(length, p == 1)$Time
 
 #Get the parallel times for each P value
-parallel_time = data.frame(matrix(ncol = length(unique(df$P)) - 1, nrow = 11))
-colnames(parallel_time) = c("1", "2", "4", "8")
+parallel_time_damp = data.frame(matrix(ncol = length(unique(damp$p)), nrow = dim(damp)[1]))
+colnames(parallel_time_damp) = c("1", "2", "4", "8", "16")
 
-for (i in colnames(parallel_time)) {
+parallel_time_length = data.frame(matrix(ncol = length(unique(length$p)), nrow = dim(length)[1]))
+colnames(parallel_time_length) = c("1", "2", "4", "8", "16")
+
+for (i in colnames(parallel_time_damp)) {
   p_value = as.numeric(i)
-  data = df$Time[df$P == p_value]
-  parallel_time[, i] = data
+  data = damp$Time[damp$p == p_value]
+  parallel_time_damp[, i] = data
+}
+
+for (i in colnames(parallel_time_length)) {
+  p_value = as.numeric(i)
+  data = length$Time[length$p == p_value]
+  parallel_time_length[, i] = data
 }
 
 #Calculate the speed up
-speedup= data.frame(matrix(ncol = length(unique(df$P)) - 1, nrow = 11))
-colnames(speedup) = c("1", "2", "4", "8")
+speedup_damp= data.frame(matrix(ncol = length(unique(damp$p)), nrow = 3))
+colnames(speedup_damp) = c("1", "2", "4", "8", "16")
 
-for (i in colnames(speedup)) {
-  speedup[,i] = as.numeric(serial_time)/as.numeric(parallel_time[,i])
+for (i in colnames(speedup_damp)) {
+  speedup_damp[,i] = (as.numeric(serial_time_damp)/as.numeric(parallel_time_damp[,i]))[1:3]
 }
 
-row.names(speedup) = unique(df$N)
+row.names(speedup_damp) = unique(damp$D)
 
-#Precision data
-pi = data.frame(matrix(ncol = length(unique(df$P)), nrow = 11))
-colnames(pi) = c("1", "2", "4", "8", "16")
+speedup_length= data.frame(matrix(ncol = length(unique(length$p)), nrow = 5))
+colnames(speedup_length) = c("1", "2", "4", "8", "16")
 
-for (i in colnames(pi)) {
-  p_value = as.numeric(i)
-  data = df$Pi[df$P == p_value]
-  data = round(as.numeric(data),5)
-  pi[, i] = data
+for (i in colnames(speedup_length)) {
+  speedup_length[,i] = (as.numeric(serial_time_length)/as.numeric(parallel_time_length[,i]))[1:5]
 }
-row.names(pi) = unique(df$N)
 
-#Difference in the pi values
-pi_diff = data.frame(matrix(ncol = length(unique(df$P)), nrow = 11))
-colnames(pi_diff) = c("1", "2", "4", "8", "16")
+row.names(speedup_length) = unique(length$K)
 
-for (i in colnames(pi)) {
-  p_value = as.numeric(i)
-  data = df$Difference[df$P == p_value]
-  data = round(as.numeric(data),5)
-  pi_diff[, i] = data
-}
-row.names(pi_diff) = unique(df$N)
 
-#Tables for speedup and pi_estimates
-kable(speedup, row.names = TRUE, caption = "")
+#Tables for speedup and timings
+kable(speedup_damp, row.names = TRUE, caption = "Speed up for corresponding $D$ (rows) dampening ratios and $p$ (columns) number of processes.")
 
-kable(pi, row.names = TRUE, caption = "")
+kable(speedup_length, row.names = TRUE, caption = "Speed up for corresponding $K$ (rows) number of steps in the random walk and $p$ (columns) number of processes.")
 
-kable(pi_diff, row.names = TRUE, caption = "")
+
 ```
 
 
@@ -114,3 +188,42 @@ kable(pi_diff, row.names = TRUE, caption = "")
 sessionInfo()
 ```
 
+
+
+D = 0.75,0.5,0.25
+p = 16
+k = 100
+
+163075 0.000020
+537039 0.000017
+597621 0.000017
+605856 0.000015
+819223 0.000014
+
+
+163075 0.000043
+537039 0.000039
+597621 0.000039
+605856 0.000034
+551829 0.000034
+
+
+597621 0.000078
+163075 0.000077
+537039 0.000077
+41909 0.000070
+504140 0.000064
+
+
+
+
+p = 16
+k = 100
+d = 0.25
+
+
+597621 0.000078
+163075 0.000077
+537039 0.000077
+41909 0.000070
+504140 0.000064
