@@ -79,6 +79,7 @@ Just visually, we can see that as the dampening ratio increases, the PageRank es
 #Libraries
 library(ggplot2)
 library(stats)
+library(latex2exp)
 
 #Import data for analysis
 damp = read.csv2("dampening.csv", header = FALSE, sep = ",")
@@ -139,7 +140,7 @@ row.names(speedup_length) = unique(length$K)
 kable(speedup_damp, row.names = TRUE, 
       caption = "Speed up for corresponding $D$ (rows) dampening ratios and $p$ (columns) number of processes.")
 ```
-The 
+Table (4) shows the speed up in time between the different number of processes used ($p$) and the dampening ratio ($D$). As the dampening ratio increases/decreases, the relative speedup between the different ratios does not change. We only see change in speedup as we change the number of processes used.
 
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
@@ -147,6 +148,29 @@ kable(speedup_length, row.names = TRUE,
       caption = "Speed up for corresponding $K$ (rows) number of steps in the random walk and $p$ (columns) number of processes.")
 ```
 
+We can observe that this too is the case for different number of steps in a random walk, as seen in the data in table (5).
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align='center', fig.cap="The graph of the time versus the number of processes for different lengths of the random walk.", fig.width=6, fig.height=4,fig.pos="h"}
+length$p <- as.numeric(length$p)
+length$Time <- as.numeric(length$Time)
+
+length$K <- as.factor(length$K)
+
+# Assuming length$Time is a vector, you want to repeat the values
+length$Time <- rep(length$Time, length.out = nrow(length))
+
+# Now, create the plot
+ggplot(length, aes(x = p, y = Time, color = K)) +
+  geom_point() +
+  geom_line() +
+  xlab(TeX("Number of Processes ($p$)")) +
+  ylab(TeX("Time ($s$)")) +
+  ggtitle("Time of Execution vs Number of Processes for Different Length Walks") +
+  scale_y_continuous()
+```
+Figure (1) shows the time at each number of processes $p$ for different values of $K$. We are able to see that there is a clear decline in time of execution for as we increase the number of processes used.
+
+|       When it comes to the time it takes for the execution to occur, the number of steps in the walk and the dampening ratio do not affect the time. The number of steps in the walk and the dampening ratio does effect the value of the PageRank estimation, but they do not affect the overall placement of the nodes (webpages) in the placement.
 
 \break
 # Analysis Code
@@ -158,6 +182,7 @@ The following is the code used for analyzing the collected data from the program
 library(ggplot2)
 library(knitr)
 library(stats)
+library(latex2exp)
 
 # Set options to display numbers without scientific notation
 options(scipen = 999)
@@ -247,9 +272,23 @@ kable(speedup_damp, row.names = TRUE,
 kable(speedup_length, row.names = TRUE, 
       caption = "Speed up for corresponding $K$ (rows) number of steps in the random walk and $p$ (columns) number of processes.")
 
+length$p <- as.numeric(length$p)
+length$Time <- as.numeric(length$Time)
 
+length$K <- as.factor(length$K)
+
+# Assuming length$Time is a vector, you want to repeat the values
+length$Time <- rep(length$Time, length.out = nrow(length))
+
+# Now, create the plot
+ggplot(length, aes(x = p, y = Time, color = K)) +
+  geom_point() +
+  geom_line() +
+  xlab(TeX("Number of Processes ($p$)")) +
+  ylab(TeX("Time ($s$)")) +
+  ggtitle("Time of Execution vs Number of Processes for Different Length of Walks") +
+  scale_y_continuous()
 ```
-
 
 \break
 # Session Info
